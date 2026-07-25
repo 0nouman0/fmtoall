@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #12100E;
+    color: #EDE6DA;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::selection {
+    background-color: #B8862B40;
+    color: #EDE6DA;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1E1B18;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3D3A35;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  .page-turn {
+    animation: pageTurn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes pageTurn {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) rotateY(-8deg) translateX(-12px);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) rotateY(0deg) translateX(0);
+    }
+  }
+
+  .spine-line {
+    position: fixed;
+    left: 24px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #3D3A35 10%, #3D3A35 90%, transparent);
+    pointer-events: none;
+  }
+
+  @media (min-width: 480px) {
+    .spine-line {
+      display: none;
+    }
+  }
+
+  .hard-cut {
+    animation: hardCut 0.15s ease-in-out;
+  }
+
+  @keyframes hardCut {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; background-color: #12100E; }
+  }
+
+  .waveform-bar {
+    display: inline-block;
+    width: 2px;
+    background-color: #B8862B;
+    border-radius: 1px;
+    transform-origin: bottom;
+  }
+
+  .waveform-bar:nth-child(1) { animation-delay: 0ms; }
+  .waveform-bar:nth-child(2) { animation-delay: 80ms; }
+  .waveform-bar:nth-child(3) { animation-delay: 160ms; }
+  .waveform-bar:nth-child(4) { animation-delay: 240ms; }
+  .waveform-bar:nth-child(5) { animation-delay: 320ms; }
+  .waveform-bar:nth-child(6) { animation-delay: 160ms; }
+  .waveform-bar:nth-child(7) { animation-delay: 80ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-turn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .hard-cut {
+      animation: none;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
+}
