@@ -10,6 +10,7 @@ import BranchModal from '@/components/BranchModal'
 import EpisodePlayer from '@/components/EpisodePlayer'
 import SpeechInput from '@/components/SpeechInput'
 import SuggestedResponses from '@/components/SuggestedResponses'
+import { ArrowLeft, Volume2, VolumeX, Sparkles, Send } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -36,7 +37,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // ─── TTS config per character ────────────────────────────────────────────────
   const getVoiceConfig = useCallback((): { rate: number; pitch: number } => {
     return ({
       onyx:    { rate: 0.80, pitch: 0.72 },
@@ -46,7 +46,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     } as Record<string, { rate: number; pitch: number }>)[character.voice] ?? { rate: 0.87, pitch: 1.0 }
   }, [character.voice])
 
-  // ─── Speak a text string ─────────────────────────────────────────────────────
   const speakText = useCallback((
     text: string,
     msgIndex: number,
@@ -63,7 +62,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     utt.pitch = cfg.pitch
     utt.volume = 1
 
-    // Duck music while speaking
     const engine = getAudioEngine()
     if (engine.isPlaying()) engine.setVolume(0.22, 350)
 
@@ -78,7 +76,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     window.speechSynthesis.speak(utt)
   }, [getVoiceConfig])
 
-  // ─── Speak the USER's chosen suggestion (neutral voice) ──────────────────────
   const speakUserReply = useCallback((text: string, onEnd?: () => void) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) { onEnd?.(); return }
     window.speechSynthesis.cancel()
@@ -91,7 +88,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     window.speechSynthesis.speak(utt)
   }, [])
 
-  // ─── Start ambient music — MUST be called from user gesture ─────────────────
   const startMusic = useCallback(() => {
     if (musicOn) return
     const engine = getAudioEngine()
@@ -100,7 +96,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     }).catch((e) => console.warn('Audio failed:', e))
   }, [musicOn, character.audioTheme])
 
-  // ─── Greeting on mount ───────────────────────────────────────────────────────
   useEffect(() => {
     const greet = async () => {
       setIsLoading(true)
@@ -122,7 +117,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
             suggestions: data.suggestions ?? null,
           }
           setMessages([msg])
-          // Auto-speak after slight delay
           setTimeout(() => speakText(data.reply, 0), 600)
         }
       } catch { /* silent */ }
@@ -136,7 +130,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // ─── Core send message ───────────────────────────────────────────────────────
   const sendMessage = async (text?: string) => {
     const msg = (text ?? input).trim()
     if (!msg || isLoading) return
@@ -179,16 +172,12 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     }
   }
 
-  // ─── Handle pre-built suggestion picked ──────────────────────────────────────
   const handleSuggestionPick = (suggestion: string) => {
-    // 1. Speak it aloud as the user's voice
     speakUserReply(suggestion, () => {
-      // 2. After speaking, send it
       sendMessage(suggestion)
     })
   }
 
-  // ─── Voice input ─────────────────────────────────────────────────────────────
   const handleVoiceTranscript = (transcript: string) => {
     setInput(transcript)
     sendMessage(transcript)
@@ -196,7 +185,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
 
   const handleVoiceInterim = (interim: string) => setInput(interim)
 
-  // ─── Branch generation ────────────────────────────────────────────────────────
   const handleBranchSubmit = async (premise: string) => {
     setIsBranchLoading(true)
     try {
@@ -213,7 +201,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     } finally { setIsBranchLoading(false) }
   }
 
-  // ─── Episode player takeover ──────────────────────────────────────────────────
   if (branchTree) {
     return (
       <EpisodePlayer
@@ -225,14 +212,11 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
     )
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <div
       className="flex flex-col h-screen bg-base max-w-phone mx-auto"
-      // Any click on the container starts music (must be user gesture)
       onClick={startMusic}
     >
-      {/* Character color accent bar */}
       <div className="h-0.5 w-full flex-shrink-0" style={{ backgroundColor: character.color }} />
 
       {/* Header */}
@@ -243,9 +227,9 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
             getAudioEngine().stop(1000)
             router.push('/')
           }}
-          className="text-paper-muted hover:text-paper transition-colors font-mono text-sm flex-shrink-0"
+          className="text-paper-muted hover:text-paper transition-colors p-1 flex-shrink-0"
         >
-          ←
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
         </button>
 
         <div className="flex-1 min-w-0">
@@ -266,7 +250,7 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
               startMusic()
             }
           }}
-          className={`flex items-center gap-1.5 px-2 py-1 border rounded-none transition-all duration-200 flex-shrink-0 ${
+          className={`flex items-center gap-1.5 px-2 py-1 border transition-all duration-200 flex-shrink-0 ${
             musicOn
               ? 'border-brass/50 text-brass'
               : 'border-divider text-paper-muted hover:border-brass/30'
@@ -279,7 +263,10 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
               <span className="font-mono text-[8px] uppercase tracking-widest">♪</span>
             </>
           ) : (
-            <span className="font-mono text-[8px] uppercase tracking-widest opacity-50">♪ off</span>
+            <div className="flex items-center gap-1">
+              <VolumeX className="w-3 h-3 opacity-50" strokeWidth={1.5} />
+              <span className="font-mono text-[8px] uppercase tracking-widest opacity-50">off</span>
+            </div>
           )}
         </button>
 
@@ -294,7 +281,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
 
       {/* Message list */}
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-        {/* Greeting loading */}
         {messages.length === 0 && isLoading && (
           <div className="flex items-center gap-2">
             <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: character.color }}>
@@ -313,13 +299,11 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
             {msg.role === 'assistant' ? (
               <div className="w-full max-w-[92%]">
-                {/* Speaker label */}
                 <p className="font-mono text-[9px] tracking-widest uppercase mb-1.5 flex items-center gap-1.5"
                   style={{ color: character.color }}>
                   {character.name.split(' ')[0]}
                   {speakingMsgIndex === i && <Waveform playing={true} bars={5} />}
                 </p>
-                {/* Message bubble — click to replay */}
                 <div
                   className="px-4 py-3 border-l-2 transition-all duration-300 cursor-pointer hover:bg-base-light group"
                   style={{ borderColor: speakingMsgIndex === i ? character.color : '#3D3A35' }}
@@ -327,12 +311,12 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
                   title="Click to hear again"
                 >
                   <p className="font-body text-sm text-paper leading-relaxed">{msg.content}</p>
-                  <p className="font-mono text-[8px] text-paper-muted opacity-0 group-hover:opacity-30 mt-1 transition-opacity">
-                    🔊 tap to replay
+                  <p className="font-mono text-[8px] text-paper-muted opacity-0 group-hover:opacity-30 mt-1 transition-opacity flex items-center gap-1">
+                    <Volume2 className="w-2.5 h-2.5" strokeWidth={1.5} />
+                    <span>tap to replay</span>
                   </p>
                 </div>
 
-                {/* Suggested responses — show only for last assistant message */}
                 {i === messages.length - 1 && msg.suggestions && msg.suggestions.length >= 2 && !isLoading && (
                   <SuggestedResponses
                     suggestions={msg.suggestions}
@@ -357,7 +341,6 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
           </div>
         ))}
 
-        {/* Typing indicator */}
         {isLoading && messages.length > 0 && (
           <div className="flex items-center gap-2 animate-fade-in">
             <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: character.color }}>
@@ -384,16 +367,17 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
         <button
           onClick={(e) => { e.stopPropagation(); startMusic(); setShowBranchModal(true) }}
           disabled={messages.length === 0 || isLoading}
-          className="w-full border py-2.5 font-body text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25 disabled:cursor-not-allowed"
+          className="w-full border py-2.5 font-body text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           style={{ borderColor: '#7A2E2E80', color: '#7A2E2E' }}
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = 'rgba(122,46,46,0.12)' }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
         >
-          What if...?
+          <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
+          <span>What if...?</span>
         </button>
       </div>
 
-      {/* Input bar — only shown when user asks to type own reply or no suggestions */}
+      {/* Input bar */}
       {(showOwnInput ||
         messages.length === 0 ||
         !messages[messages.length - 1]?.suggestions ||
@@ -423,15 +407,15 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || isLoading}
-              className="border border-brass text-brass font-mono text-xs px-3 py-3 hover:bg-brass hover:text-base transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
+              className="border border-brass text-brass font-mono text-xs px-3 py-3 hover:bg-brass hover:text-base transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0 flex items-center gap-1"
             >
-              Ask →
+              <span>Ask</span>
+              <Send className="w-3 h-3" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       )}
 
-      {/* When suggestions are shown, show minimal mic-only bar */}
       {!showOwnInput &&
         messages.length > 0 &&
         messages[messages.length - 1]?.suggestions &&

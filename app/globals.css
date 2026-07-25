@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,96 +11,155 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   ::selection {
     background-color: #B8862B40;
     color: #EDE6DA;
   }
 
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #1E1B18;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #3D3A35;
-    border-radius: 2px;
-  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #1E1B18; }
+  ::-webkit-scrollbar-thumb { background: #3D3A35; border-radius: 2px; }
 }
 
 @layer components {
+
+  /* ── Page-turn enter animation ── */
   .page-turn {
-    animation: pageTurn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: pageTurn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
-
   @keyframes pageTurn {
-    0% {
-      opacity: 0;
-      transform: perspective(1200px) rotateY(-8deg) translateX(-12px);
-    }
-    100% {
-      opacity: 1;
-      transform: perspective(1200px) rotateY(0deg) translateX(0);
-    }
+    0%   { opacity: 0; transform: perspective(1200px) rotateY(-6deg) translateX(-10px); }
+    100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateX(0); }
   }
 
-  .spine-line {
-    position: fixed;
-    left: 24px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: linear-gradient(to bottom, transparent, #3D3A35 10%, #3D3A35 90%, transparent);
-    pointer-events: none;
-  }
-
-  @media (min-width: 480px) {
-    .spine-line {
-      display: none;
-    }
-  }
-
-  .hard-cut {
-    animation: hardCut 0.15s ease-in-out;
-  }
-
+  /* ── Hard cut between episode beats ── */
+  .hard-cut { animation: hardCut 0.15s ease-in-out; }
   @keyframes hardCut {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0; background-color: #12100E; }
+    50%       { opacity: 0; }
   }
 
+  /* ── Waveform bars ── */
   .waveform-bar {
     display: inline-block;
     width: 2px;
     background-color: #B8862B;
     border-radius: 1px;
     transform-origin: bottom;
+    min-height: 4px;
   }
 
-  .waveform-bar:nth-child(1) { animation-delay: 0ms; }
-  .waveform-bar:nth-child(2) { animation-delay: 80ms; }
-  .waveform-bar:nth-child(3) { animation-delay: 160ms; }
-  .waveform-bar:nth-child(4) { animation-delay: 240ms; }
-  .waveform-bar:nth-child(5) { animation-delay: 320ms; }
-  .waveform-bar:nth-child(6) { animation-delay: 160ms; }
-  .waveform-bar:nth-child(7) { animation-delay: 80ms; }
+  /* ── Landing hero glow ── */
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, #B8862B14, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, #7A2E2E0A, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 70%, #2E4A7A0A, transparent 60%);
+    pointer-events: none;
+  }
 
+  /* ── Scanline texture overlay ── */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* ── Feature card hover glow ── */
+  .feature-card {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, #B8862B30, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .feature-card:hover::before { opacity: 1; }
+
+  /* ── Character card on landing ── */
+  .character-landing-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .character-landing-card:hover {
+    transform: translateY(-4px);
+  }
+
+  /* ── Gradient text ── */
+  .gradient-text {
+    background: linear-gradient(135deg, #EDE6DA 0%, #B8862B 50%, #EDE6DA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Flowing border animation ── */
+  .flowing-border {
+    position: relative;
+  }
+  .flowing-border::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #B8862B, transparent);
+    animation: flowBorder 3s ease-in-out infinite;
+  }
+  @keyframes flowBorder {
+    0%, 100% { transform: scaleX(0); opacity: 0; }
+    50%       { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ── Number badge (How It Works) ── */
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #B8862B50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    color: #B8862B;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .step-number::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid #B8862B20;
+  }
+
+  /* ── Reduced motion overrides ── */
   @media (prefers-reduced-motion: reduce) {
-    .page-turn {
-      animation: fadeIn 0.3s ease-out forwards;
-    }
-    .hard-cut {
+    .page-turn,
+    .hard-cut,
+    .character-landing-card:hover {
       animation: none;
+      transform: none;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    .flowing-border::after { animation: none; opacity: 0; }
   }
 }
+
+/* ── Utility: hide scrollbar but keep scrollability ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

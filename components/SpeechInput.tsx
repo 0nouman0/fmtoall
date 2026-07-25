@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Waveform from './Waveform'
+import { Mic, Disc, Ban, Loader2 } from 'lucide-react'
 
 interface SpeechInputProps {
   onTranscript: (text: string) => void
@@ -39,7 +40,7 @@ export default function SpeechInput({ onTranscript, onInterim, disabled }: Speec
     const recognition = new SpeechRecognitionAPI()
     recognition.continuous = false
     recognition.interimResults = true
-    recognition.lang = 'en-IN' // Indian English — works for the demo context
+    recognition.lang = 'en-IN'
 
     recognition.onstart = () => {
       setState('listening')
@@ -99,7 +100,7 @@ export default function SpeechInput({ onTranscript, onInterim, disabled }: Speec
   }
 
   if (!isSupported) {
-    return null // Don't render mic button if unsupported
+    return null
   }
 
   return (
@@ -124,28 +125,13 @@ export default function SpeechInput({ onTranscript, onInterim, disabled }: Speec
       `}
     >
       {state === 'listening' ? (
-        // Animated listening indicator
         <Waveform playing={true} bars={5} />
       ) : state === 'processing' ? (
-        <span className="text-xs animate-spin inline-block">⟳</span>
+        <Loader2 className="w-4 h-4 animate-spin text-brass" strokeWidth={1.5} />
       ) : state === 'error' ? (
-        <span className="text-sm">🚫</span>
+        <Ban className="w-4 h-4 text-red" strokeWidth={1.5} />
       ) : (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect x="9" y="2" width="6" height="12" rx="3" />
-          <path d="M5 10a7 7 0 0 0 14 0" />
-          <line x1="12" y1="19" x2="12" y2="22" />
-          <line x1="8" y1="22" x2="16" y2="22" />
-        </svg>
+        <Mic className="w-4 h-4" strokeWidth={1.5} />
       )}
     </button>
   )

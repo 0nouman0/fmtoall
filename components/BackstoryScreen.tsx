@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Character } from '@/lib/personas'
 import { getAudioEngine, AudioTheme } from '@/lib/audioEngine'
+import { ArrowLeft, Volume2, ArrowRight, Play } from 'lucide-react'
 
 interface BackstoryScreenProps {
   character: Character & {
@@ -24,18 +25,15 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
   const [isSpeaking, setIsSpeaking] = useState(false)
 
   useEffect(() => {
-    // Staggered reveal animation
     const t1 = setTimeout(() => setShowTitle(true), 200)
     const t2 = setTimeout(() => setShowNarrative(true), 700)
 
-    // Reveal chapters one by one
     character.backstory_chapters.forEach((_, i) => {
       setTimeout(() => {
         setRevealedChapters((prev) => [...prev, i])
       }, 1200 + i * 350)
     })
 
-    // Show enter button after all chapters revealed
     const total = 1200 + character.backstory_chapters.length * 350 + 500
     const t3 = setTimeout(() => setShowEnter(true), total)
 
@@ -69,7 +67,6 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
     utterance.onerror = () => setIsSpeaking(false)
     utteranceRef.current = utterance
 
-    // Lower music while speaking
     const engine = getAudioEngine()
     engine.setVolume(0.3, 400)
     window.speechSynthesis.speak(utterance)
@@ -81,7 +78,6 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
   }
 
   const handleChapterClick = async (index: number, text: string) => {
-    // Start music FIRST (user gesture), then speak
     await startAudio()
     setActiveChapter(index === activeChapter ? null : index)
     speakChapter(text)
@@ -91,16 +87,12 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
     if (typeof window !== 'undefined') {
       window.speechSynthesis?.cancel()
     }
-    // Start music here if not started yet — this is a clear user gesture
     await startAudio()
     onEnter()
   }
 
   return (
-    <div
-      className="min-h-screen bg-base flex flex-col relative overflow-hidden"
-    >
-
+    <div className="min-h-screen bg-base flex flex-col relative overflow-hidden">
       {/* Atmospheric gradient backdrop */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none"
@@ -109,33 +101,15 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
         }}
       />
 
-      {/* Animated particles (CSS only) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-px opacity-20 animate-pulse-slow"
-            style={{
-              height: `${20 + i * 15}%`,
-              left: `${10 + i * 16}%`,
-              top: `${5 + (i % 3) * 20}%`,
-              backgroundColor: character.color,
-              animationDelay: `${i * 0.7}s`,
-              animationDuration: `${3 + i * 0.5}s`,
-            }}
-          />
-        ))}
-      </div>
-
       <div className="relative z-10 max-w-phone mx-auto w-full px-6 py-8 flex flex-col min-h-screen">
-
         {/* Back button */}
         <div className="mb-6">
           <a
             href="/"
-            className="font-mono text-[10px] tracking-widest uppercase text-paper-muted hover:text-brass transition-colors"
+            className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-paper-muted hover:text-brass transition-colors"
           >
-            ← All Characters
+            <ArrowLeft className="w-3 h-3" strokeWidth={1.5} />
+            <span>All Characters</span>
           </a>
         </div>
 
@@ -168,7 +142,7 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
           <p className="font-mono text-[10px] tracking-widest uppercase text-paper-muted mb-3 flex items-center gap-2">
             <span>Tap a chapter to hear it</span>
             {isSpeaking && (
-              <span className="inline-flex gap-0.5">
+              <span className="inline-flex gap-0.5 items-end h-3">
                 {[...Array(4)].map((_, i) => (
                   <span
                     key={i}
@@ -225,11 +199,9 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
                     </p>
                   </div>
                   {/* Speaker icon */}
-                  <span className={`text-xs flex-shrink-0 mt-0.5 transition-opacity duration-200 ${
-                    isActive && isSpeaking ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
-                  }`}>
-                    🔊
-                  </span>
+                  <Volume2 className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-opacity duration-200 ${
+                    isActive && isSpeaking ? 'opacity-100 text-brass' : 'opacity-0 group-hover:opacity-40'
+                  }`} strokeWidth={1.5} />
                 </div>
               </button>
             )
@@ -244,10 +216,11 @@ export default function BackstoryScreen({ character, onEnter }: BackstoryScreenP
         >
           <button
             onClick={handleEnter}
-            className="w-full py-4 font-display text-lg font-bold text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full py-4 font-display text-lg font-bold text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             style={{ backgroundColor: character.color }}
           >
-            Step Inside →
+            <span>Step Inside</span>
+            <ArrowRight className="w-5 h-5" strokeWidth={2} />
           </button>
           <p className="text-center font-mono text-[10px] text-paper-muted mt-3 opacity-40 tracking-wider uppercase">
             Music & voice will continue in chat

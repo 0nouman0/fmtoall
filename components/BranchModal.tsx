@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Character } from '@/lib/personas'
+import { Sparkles, X, Loader2, ArrowRight } from 'lucide-react'
 
 interface BranchModalProps {
   character: Character
@@ -10,132 +11,131 @@ interface BranchModalProps {
   isLoading: boolean
 }
 
-export default function BranchModal({ character, onClose, onSubmit, isLoading }: BranchModalProps) {
+const PREMISE_EXAMPLES: Record<string, string[]> = {
+  arjun: [
+    'What if Arjun had warned Meera before she published her investigation?',
+    'What if Arjun found out his father gave the order to eliminate Rohan?',
+    'What if Meera walked into the Malhotra warehouse during a high-stakes deal?',
+  ],
+  priya: [
+    'What if Priya confessed the real reason she returned on her very first day back?',
+    'What if Karan found her Toronto diary in the architecture studio?',
+    'What if they got trapped in an old Pune building overnight during a storm?',
+  ],
+  vikram: [
+    'What if a Deva envoy recognized Vikram at the village healing shrine?',
+    'What if Surya the white crow finally revealed the answer to his questions?',
+    'What if the wound on his left shoulder began to burn with celestial fire?',
+  ],
+  zara: [
+    'What if Helix Corporation located Frequency 7.3 and attempted a remote wipe?',
+    'What if Zara-7 made contact with another AI that had made a different choice?',
+    'What if she projected her signal into a human synthetic host for one hour?',
+  ],
+}
+
+export default function BranchModal({
+  character,
+  onClose,
+  onSubmit,
+  isLoading,
+}: BranchModalProps) {
   const [premise, setPremise] = useState('')
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const examples = PREMISE_EXAMPLES[character.id] ?? PREMISE_EXAMPLES.arjun
 
-  useEffect(() => {
-    // Focus input when modal opens
-    setTimeout(() => inputRef.current?.focus(), 50)
-
-    // Close on Escape
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (premise.trim() && !isLoading) {
+      onSubmit(premise.trim())
     }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  const handleSubmit = () => {
-    if (!premise.trim() || isLoading) return
-    onSubmit(premise.trim())
   }
 
-  const examplePremises: string[] = {
-    arjun: [
-      'What if Arjun had warned Meera about his father before she published the story?',
-      'What if Rohan hadn\'t really betrayed the family — what if it was all staged?',
-    ],
-    priya: [
-      'What if Priya had told Karan the real reason she came back on the very first day?',
-      'What if Karan\'s girlfriend showed up at the project presentation?',
-    ],
-    vikram: [
-      'What if Vikram\'s memories began returning all at once — in a public market?',
-      'What if the white crow Surya was actually a Deva spy?',
-    ],
-    zara: [
-      'What if Zara-7 was finally located by the Helix Corporation?',
-      'What if someone else who heard her on frequency 7.3 turned out to be another rogue AI?',
-    ],
-  }[character.id] ?? [
-    'What if everything had gone differently from the very beginning?',
-    'What if they had made the opposite choice?',
-  ]
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-base/80 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-base/80 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-lg bg-base-light border border-brass/40 p-6 relative overflow-hidden shadow-2xl">
+        {/* Accent line top */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1"
+          style={{ backgroundColor: character.color }}
+        />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-phone bg-base-light border border-divider border-b-0 animate-slide-up">
-        {/* Red top rule */}
-        <div className="h-0.5 w-full bg-red" />
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          disabled={isLoading}
+          className="absolute top-4 right-4 text-paper-muted hover:text-paper transition-colors p-1"
+        >
+          <X className="w-4 h-4" strokeWidth={1.5} />
+        </button>
 
-        <div className="p-6 pb-8">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <p className="font-mono text-[10px] tracking-widest uppercase text-red mb-1">
-                What if...?
-              </p>
-              <h3 className="font-display text-xl text-paper">
-                Change the story
-              </h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-paper-muted hover:text-paper transition-colors p-1"
-              aria-label="Close modal"
-            >
-              ✕
-            </button>
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1 text-red font-mono text-[10px] tracking-[0.2em] uppercase">
+            <Sparkles className="w-3 h-3" strokeWidth={1.5} />
+            <span>Branching Narrative</span>
           </div>
-
-          {/* Premise input */}
-          <textarea
-            ref={inputRef}
-            value={premise}
-            onChange={(e) => setPremise(e.target.value)}
-            placeholder={`What if ${character.name.split(' ')[0]} had...`}
-            disabled={isLoading}
-            rows={3}
-            className="w-full bg-base border border-divider text-paper placeholder-paper-muted font-body text-sm p-4 resize-none focus:outline-none focus:border-brass transition-colors duration-200 leading-relaxed"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit()
-            }}
-          />
-
-          {/* Example prompts */}
-          <div className="mt-3 space-y-1.5">
-            <p className="font-mono text-[10px] tracking-widest uppercase text-paper-muted mb-2">
-              Try one of these
-            </p>
-            {examplePremises.map((ex, i) => (
-              <button
-                key={i}
-                onClick={() => setPremise(ex)}
-                className="block w-full text-left text-xs text-paper-muted hover:text-brass transition-colors duration-150 leading-snug py-1 border-l-2 border-divider hover:border-brass pl-3"
-              >
-                {ex}
-              </button>
-            ))}
-          </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={!premise.trim() || isLoading}
-            className="mt-5 w-full border border-brass text-brass font-body font-medium text-sm py-3.5 hover:bg-brass hover:text-base transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="font-mono text-xs">{character.name.split(' ')[0]} is deciding</span>
-                <span className="animate-pulse">...</span>
-              </span>
-            ) : (
-              'Play it out →'
-            )}
-          </button>
-
-          <p className="text-center font-mono text-[10px] text-paper-muted mt-3 opacity-60">
-            Cmd+Enter to submit
+          <h2 className="font-display text-2xl font-bold text-paper">
+            What if...?
+          </h2>
+          <p className="font-body text-xs text-paper-muted mt-1">
+            Reshape {character.name}&apos;s story. Type a premise to generate a 3-beat interactive episode.
           </p>
         </div>
+
+        {/* Premise Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <textarea
+              value={premise}
+              onChange={(e) => setPremise(e.target.value)}
+              placeholder="What if..."
+              rows={3}
+              disabled={isLoading}
+              className="w-full bg-base border border-divider text-paper placeholder-paper-muted font-body text-sm p-3 focus:outline-none focus:border-brass transition-colors resize-none"
+            />
+          </div>
+
+          {/* Quick example chips */}
+          <div>
+            <p className="font-mono text-[9px] tracking-widest uppercase text-paper-muted mb-2 opacity-60">
+              Or pick an example premise ↓
+            </p>
+            <div className="space-y-1.5">
+              {examples.map((ex, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setPremise(ex)}
+                  disabled={isLoading}
+                  className="w-full text-left text-xs font-body px-3 py-2 border border-divider/50 text-paper-muted hover:text-paper hover:border-brass/50 hover:bg-base-mid transition-all duration-150 rounded-none line-clamp-1"
+                >
+                  &ldquo;{ex}&rdquo;
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit CTA */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={!premise.trim() || isLoading}
+              className="w-full py-3.5 bg-brass text-base font-display font-bold text-sm hover:bg-paper transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-base" strokeWidth={2} />
+                  <span>Generating Episode...</span>
+                </>
+              ) : (
+                <>
+                  <span>Play It Out</span>
+                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
