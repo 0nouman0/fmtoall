@@ -6,8 +6,8 @@
 
 @layer base {
   html {
-    background-color: #12100E;
-    color: #EDE6DA;
+    background-color: #0B0914;
+    color: #F3EFE0;
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -17,13 +17,13 @@
   * { box-sizing: border-box; }
 
   ::selection {
-    background-color: #B8862B40;
-    color: #EDE6DA;
+    background-color: #10B98140;
+    color: #F3EFE0;
   }
 
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #1E1B18; }
-  ::-webkit-scrollbar-thumb { background: #3D3A35; border-radius: 2px; }
+  ::-webkit-scrollbar-track { background: #151124; }
+  ::-webkit-scrollbar-thumb { background: #251F35; border-radius: 2px; }
 }
 
 @layer components {
@@ -48,7 +48,7 @@
   .waveform-bar {
     display: inline-block;
     width: 2px;
-    background-color: #B8862B;
+    background-color: #10B981;
     border-radius: 1px;
     transform-origin: bottom;
     min-height: 4px;
@@ -58,9 +58,9 @@
   .hero-glow {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 50% at 50% 0%, #B8862B14, transparent 65%),
-                radial-gradient(ellipse 50% 40% at 20% 80%, #7A2E2E0A, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 80% 70%, #2E4A7A0A, transparent 60%);
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, #10B98118, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, #7B2CBF15, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 70%, #3A86FF12, transparent 60%);
     pointer-events: none;
   }
 
@@ -72,8 +72,8 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
     );
     pointer-events: none;
   }
@@ -87,7 +87,7 @@
     content: '';
     position: absolute;
     inset: -1px;
-    background: linear-gradient(135deg, #B8862B30, transparent 50%);
+    background: linear-gradient(135deg, #10B98130, transparent 50%);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -102,9 +102,9 @@
     transform: translateY(-4px);
   }
 
-  /* ── Gradient text ── */
+  /* ── Gradient text (Emerald Green) ── */
   .gradient-text {
-    background: linear-gradient(135deg, #EDE6DA 0%, #B8862B 50%, #EDE6DA 100%);
+    background: linear-gradient(135deg, #F3EFE0 0%, #10B981 50%, #34D399 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -119,7 +119,7 @@
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #B8862B, transparent);
+    background: linear-gradient(90deg, transparent, #10B981, transparent);
     animation: flowBorder 3s ease-in-out infinite;
   }
   @keyframes flowBorder {
@@ -131,13 +131,13 @@
   .step-number {
     width: 36px;
     height: 36px;
-    border: 1px solid #B8862B50;
+    border: 1px solid #10B98150;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Fraunces', serif;
     font-size: 1.1rem;
-    color: #B8862B;
+    color: #10B981;
     flex-shrink: 0;
     position: relative;
   }
@@ -145,7 +145,7 @@
     content: '';
     position: absolute;
     inset: -4px;
-    border: 1px solid #B8862B20;
+    border: 1px solid #10B98120;
   }
 
   /* ── Reduced motion overrides ── */
@@ -160,6 +160,5 @@
   }
 }
 
-/* ── Utility: hide scrollbar but keep scrollability ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

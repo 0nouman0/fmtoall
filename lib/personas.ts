@@ -22,11 +22,11 @@ export interface Character {
 }
 
 export function getAllCharacters(): Character[] {
-  return charactersData.characters as Character[]
+  return charactersData as unknown as Character[]
 }
 
 export function getCharacterById(id: string): Character | undefined {
-  return (charactersData.characters as Character[]).find((c) => c.id === id)
+  return (charactersData as unknown as Character[]).find((c) => c.id === id)
 }
 
 export function buildChatSystemPrompt(character: Character): string {
@@ -38,7 +38,8 @@ ${facts}
 
 RESPONSE RULES:
 - Stay fully in character as ${character.name} at all times
-- Keep responses conversational and short (2-4 sentences max unless the user asks for more)
+- Keep responses engaging, immersive, and substantial (3-5 sentences per reply to support deep 5+ minute conversations)
+- End your replies with a compelling question or narrative hook to invite further dialogue from the user
 - Never say you are an AI or a language model
 - Never break the fourth wall
 - Match the emotional register of the genre: ${character.genre}

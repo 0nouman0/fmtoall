@@ -48,7 +48,10 @@ Rules:
   if (Array.isArray(parsed.suggestions) && parsed.suggestions.length >= 2) {
     return [parsed.suggestions[0], parsed.suggestions[1]]
   }
-  return []
+  return [
+    `Tell me more about what you mean, ${character.name.split(' ')[0]}.`,
+    `I'm not sure if I can trust your answer.`,
+  ]
 }
 
 export async function POST(req: NextRequest) {
@@ -67,9 +70,14 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildChatSystemPrompt(character)
 
+    const sanitizedHistory = history.slice(-10).map((h: { role: string; content: string }) => ({
+      role: h.role === 'assistant' ? 'assistant' : 'user',
+      content: String(h.content || ''),
+    }))
+
     const messages = [
       { role: 'system' as const, content: systemPrompt },
-      ...history.slice(-10),
+      ...sanitizedHistory,
       { role: 'user' as const, content: message },
     ]
 
@@ -83,15 +91,16 @@ export async function POST(req: NextRequest) {
 
     const reply = completion.choices[0]?.message?.content ?? '...'
 
-    // If the reply contains a question, generate 2 suggested user responses in parallel
+    // Generate 2 suggested user responses for every turn
     let suggestions: string[] = []
-    if (isQuestion(reply)) {
-      try {
-        suggestions = await generateSuggestions(character, reply)
-      } catch (err) {
-        console.warn('[/api/chat] Could not generate suggestions:', err)
-        // Non-fatal — suggestions are a nice-to-have
-      }
+    try {
+      suggestions = await generateSuggestions(character, reply)
+    } catch (err) {
+      console.warn('[/api/chat] Could not generate suggestions:', err)
+      suggestions = [
+        `Tell me more about what you mean, ${character.name.split(' ')[0]}.`,
+        `I'm not sure if I can trust your answer.`,
+      ]
     }
 
     return NextResponse.json({ reply, suggestions: suggestions.length >= 2 ? suggestions : null })

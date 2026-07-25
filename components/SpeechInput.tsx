@@ -14,15 +14,15 @@ type RecordingState = 'idle' | 'listening' | 'processing' | 'error'
 
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
+    SpeechRecognition: any
+    webkitSpeechRecognition: any
   }
 }
 
 export default function SpeechInput({ onTranscript, onInterim, disabled }: SpeechInputProps) {
   const [state, setState] = useState<RecordingState>('idle')
   const [isSupported, setIsSupported] = useState(false)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
 
   useEffect(() => {
     const supported =
@@ -46,7 +46,7 @@ export default function SpeechInput({ onTranscript, onInterim, disabled }: Speec
       setState('listening')
     }
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let interimTranscript = ''
       let finalTranscript = ''
 
@@ -70,7 +70,7 @@ export default function SpeechInput({ onTranscript, onInterim, disabled }: Speec
       }
     }
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: any) => {
       console.warn('Speech recognition error:', event.error)
       setState(event.error === 'not-allowed' ? 'error' : 'idle')
       setTimeout(() => setState('idle'), 2000)

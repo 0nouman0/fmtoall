@@ -8,14 +8,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        base: '#12100E',
-        paper: '#EDE6DA',
-        brass: '#B8862B',
-        red: '#7A2E2E',
-        divider: '#3D3A35',
-        'paper-muted': '#A09880',
-        'base-light': '#1E1B18',
-        'base-mid': '#2A2520',
+        // Celestial Space & Emerald Accent Palette
+        base: '#0B0914',            // Deep space indigo
+        paper: '#F3EFE0',           // Warm starlight cream
+        brass: '#10B981',           // Emerald Green (Replaced golden text)
+        red: '#7B2CBF',             // Cosmic Violet
+        divider: '#251F35',         // Deep violet border
+        'paper-muted': '#A49BB5',   // Muted violet text
+        'base-light': '#151124',    // Light indigo surface
+        'base-mid': '#1D1830',      // Mid indigo surface
       },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],

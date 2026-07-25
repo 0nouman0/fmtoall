@@ -1,8 +1,6 @@
 /**
  * AudioEngine — procedural ambient soundscapes via Web Audio API.
- * IMPORTANT: play() MUST be called from a direct user gesture handler
- * (click / tap / keydown) — never from useEffect or setTimeout.
- * Browsers block AudioContext creation/resume outside user gestures.
+ * Refined for pleasant, smooth, warm harmonic ambiance across all personas.
  */
 
 export type AudioTheme = 'crime' | 'romance' | 'mythic' | 'scifi'
@@ -26,53 +24,60 @@ interface ThemeConfig {
 
 const THEMES: Record<AudioTheme, ThemeConfig> = {
   crime: {
-    masterGain: 0.35,
-    filterFreq: 500,
+    // Warm, mysterious low ambient pad with smooth fifths
+    masterGain: 0.30,
+    filterFreq: 450,
     hasNoise: true,
-    noiseGain: 0.06,
+    noiseGain: 0.02,
     hasPulse: false,
     oscs: [
-      { freq: 55,   type: 'sine',     gain: 0.6,  lfoRate: 0.08, lfoDepth: 0.2 },
-      { freq: 82.5, type: 'sine',     gain: 0.35, lfoRate: 0.05, lfoDepth: 0.12 },
-      { freq: 110,  type: 'triangle', gain: 0.2,  lfoRate: 0.13, lfoDepth: 0.1 },
+      { freq: 65.41,  type: 'sine', gain: 0.55, lfoRate: 0.05, lfoDepth: 0.15 }, // C2
+      { freq: 98.00,  type: 'sine', gain: 0.35, lfoRate: 0.04, lfoDepth: 0.10 }, // G2 (5th)
+      { freq: 130.81, type: 'sine', gain: 0.25, lfoRate: 0.07, lfoDepth: 0.08 }, // C3
+      { freq: 155.56, type: 'sine', gain: 0.15, lfoRate: 0.06, lfoDepth: 0.05 }, // Eb3 (minor 3rd)
     ],
   },
   romance: {
-    masterGain: 0.3,
-    filterFreq: 1500,
+    // Lush, pleasant, soothing warm major chord pad
+    masterGain: 0.28,
+    filterFreq: 1200,
     hasNoise: false,
     noiseGain: 0,
     hasPulse: false,
     oscs: [
-      { freq: 261.63, type: 'sine', gain: 0.45, lfoRate: 0.1,  lfoDepth: 0.12 },
-      { freq: 329.63, type: 'sine', gain: 0.32, lfoRate: 0.08, lfoDepth: 0.09 },
-      { freq: 392,    type: 'sine', gain: 0.25, lfoRate: 0.06, lfoDepth: 0.08 },
-      { freq: 523.25, type: 'sine', gain: 0.12, lfoRate: 0.12, lfoDepth: 0.05 },
+      { freq: 130.81, type: 'sine', gain: 0.40, lfoRate: 0.08, lfoDepth: 0.10 }, // C3 root
+      { freq: 164.81, type: 'sine', gain: 0.35, lfoRate: 0.06, lfoDepth: 0.08 }, // E3 major 3rd
+      { freq: 196.00, type: 'sine', gain: 0.30, lfoRate: 0.05, lfoDepth: 0.07 }, // G3 5th
+      { freq: 246.94, type: 'sine', gain: 0.20, lfoRate: 0.09, lfoDepth: 0.05 }, // B3 maj 7th
+      { freq: 261.63, type: 'sine', gain: 0.15, lfoRate: 0.11, lfoDepth: 0.04 }, // C4
     ],
   },
   mythic: {
-    masterGain: 0.38,
-    filterFreq: 600,
-    hasNoise: true,
-    noiseGain: 0.04,
+    // Ancient, serene, ethereal temple pad
+    masterGain: 0.32,
+    filterFreq: 550,
+    hasNoise: false,
+    noiseGain: 0,
     hasPulse: false,
     oscs: [
-      { freq: 55,  type: 'sine',     gain: 0.55, lfoRate: 0.04, lfoDepth: 0.22 },
-      { freq: 110, type: 'sine',     gain: 0.38, lfoRate: 0.03, lfoDepth: 0.16 },
-      { freq: 165, type: 'triangle', gain: 0.22, lfoRate: 0.05, lfoDepth: 0.1 },
-      { freq: 220, type: 'sine',     gain: 0.1,  lfoRate: 0.07, lfoDepth: 0.06 },
+      { freq: 110.00, type: 'sine', gain: 0.50, lfoRate: 0.03, lfoDepth: 0.18 }, // A2
+      { freq: 164.81, type: 'sine', gain: 0.35, lfoRate: 0.04, lfoDepth: 0.12 }, // E3 (5th)
+      { freq: 220.00, type: 'sine', gain: 0.25, lfoRate: 0.05, lfoDepth: 0.08 }, // A3
+      { freq: 277.18, type: 'sine', gain: 0.18, lfoRate: 0.07, lfoDepth: 0.06 }, // C#4 (maj 3rd)
     ],
   },
   scifi: {
-    masterGain: 0.28,
-    filterFreq: 1200,
+    // Soft, soothing, shimmering deep space drone
+    masterGain: 0.25,
+    filterFreq: 900,
     hasNoise: true,
-    noiseGain: 0.08,
-    hasPulse: true,
+    noiseGain: 0.03,
+    hasPulse: false,
     oscs: [
-      { freq: 220, type: 'sine', gain: 0.3,  lfoRate: 0.18, lfoDepth: 0.18 },
-      { freq: 440, type: 'sine', gain: 0.15, lfoRate: 0.28, lfoDepth: 0.1 },
-      { freq: 880, type: 'sine', gain: 0.05, lfoRate: 0.45, lfoDepth: 0.04 },
+      { freq: 146.83, type: 'sine', gain: 0.40, lfoRate: 0.10, lfoDepth: 0.12 }, // D3
+      { freq: 220.00, type: 'sine', gain: 0.30, lfoRate: 0.15, lfoDepth: 0.09 }, // A3
+      { freq: 293.66, type: 'sine', gain: 0.20, lfoRate: 0.20, lfoDepth: 0.06 }, // D4
+      { freq: 440.00, type: 'sine', gain: 0.10, lfoRate: 0.25, lfoDepth: 0.03 }, // A4
     ],
   },
 }
@@ -84,10 +89,8 @@ export class AudioEngine {
   private masterGainNode: GainNode | null = null
   private allNodes: (AudioNode | OscillatorNode | AudioBufferSourceNode)[] = []
   private currentTheme: AudioTheme | null = null
-  private pulseTimer: ReturnType<typeof setInterval> | null = null
   private _volume = 1
 
-  /** Must be called from a user gesture. Creates + resumes AudioContext. */
   private async getReadyCtx(): Promise<AudioContext> {
     const AC: AudioCtxType =
       window.AudioContext ||
@@ -102,12 +105,10 @@ export class AudioEngine {
     return this.ctx
   }
 
-  /** Call this ONLY from a click/tap handler. */
   async play(theme: AudioTheme, fadeInSec = 2.5): Promise<void> {
     if (typeof window === 'undefined') return
-    if (this.currentTheme === theme) return // already playing this theme
+    if (this.currentTheme === theme) return
 
-    // Fade out any existing audio
     if (this.currentTheme !== null) {
       await this.stop(800)
     }
@@ -123,7 +124,6 @@ export class AudioEngine {
       return
     }
 
-    // Master gain (fades in)
     const master = ctx.createGain()
     master.gain.setValueAtTime(0.001, ctx.currentTime)
     master.gain.linearRampToValueAtTime(
@@ -134,15 +134,13 @@ export class AudioEngine {
     this.masterGainNode = master
     this.allNodes = [master]
 
-    // Low-pass filter on master bus
     const filter = ctx.createBiquadFilter()
     filter.type = 'lowpass'
     filter.frequency.value = config.filterFreq
-    filter.Q.value = 0.8
+    filter.Q.value = 0.7
     filter.connect(master)
     this.allNodes.push(filter)
 
-    // Oscillators
     for (const osc of config.oscs) {
       const o = ctx.createOscillator()
       o.type = osc.type
@@ -156,7 +154,6 @@ export class AudioEngine {
       o.start()
       this.allNodes.push(o, g)
 
-      // LFO tremolo
       if (osc.lfoRate && osc.lfoDepth) {
         const lfo = ctx.createOscillator()
         const lfoG = ctx.createGain()
@@ -170,7 +167,6 @@ export class AudioEngine {
       }
     }
 
-    // Noise layer
     if (config.hasNoise && config.noiseGain > 0) {
       try {
         const bufLen = ctx.sampleRate * 2
@@ -184,7 +180,7 @@ export class AudioEngine {
 
         const nf = ctx.createBiquadFilter()
         nf.type = 'lowpass'
-        nf.frequency.value = config.filterFreq * 0.4
+        nf.frequency.value = config.filterFreq * 0.3
 
         const ng = ctx.createGain()
         ng.gain.value = config.noiseGain
@@ -194,37 +190,11 @@ export class AudioEngine {
         ng.connect(master)
         ns.start()
         this.allNodes.push(ns, nf, ng)
-      } catch {
-        // noise is optional — don't fail
-      }
-    }
-
-    // Sci-fi periodic pulse
-    if (config.hasPulse) {
-      this.pulseTimer = setInterval(() => {
-        if (!this.masterGainNode || this.ctx?.state !== 'running') return
-        try {
-          const po = ctx.createOscillator()
-          const pg = ctx.createGain()
-          po.type = 'sine'
-          po.frequency.value = 1320
-          pg.gain.setValueAtTime(0.07, ctx.currentTime)
-          pg.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45)
-          po.connect(pg)
-          pg.connect(master)
-          po.start()
-          po.stop(ctx.currentTime + 0.45)
-        } catch { /* ignore */ }
-      }, 3500)
+      } catch { /* ignore */ }
     }
   }
 
-  /** Fade out and disconnect all nodes. */
   async stop(fadeOutMs = 1400): Promise<void> {
-    if (this.pulseTimer) {
-      clearInterval(this.pulseTimer)
-      this.pulseTimer = null
-    }
     if (!this.masterGainNode || !this.ctx) {
       this.currentTheme = null
       return
@@ -252,7 +222,6 @@ export class AudioEngine {
     }
   }
 
-  /** Duck to a fraction of full volume (e.g. 0.3 while speaking). */
   setVolume(fraction: number, rampMs = 500): void {
     this._volume = fraction
     if (!this.masterGainNode || !this.ctx) return
@@ -275,7 +244,6 @@ export class AudioEngine {
   }
 }
 
-// One engine for the entire session
 let _instance: AudioEngine | null = null
 export function getAudioEngine(): AudioEngine {
   if (!_instance) _instance = new AudioEngine()

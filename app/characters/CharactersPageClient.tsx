@@ -23,10 +23,11 @@ export default function CharactersPageClient({ characters }: CharactersPageClien
   const [selectedGenre, setSelectedGenre] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const genres = ['All', ...Array.from(new Set(characters.map((c) => c.genre)))]
+  const safeCharacters = characters || []
+  const genres = ['All', ...Array.from(new Set(safeCharacters.map((c) => c.genre)))]
 
   // Filter characters
-  const filtered = characters.filter((c) => {
+  const filtered = safeCharacters.filter((c) => {
     const matchesGenre = selectedGenre === 'All' || c.genre === selectedGenre
     const matchesQuery =
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
