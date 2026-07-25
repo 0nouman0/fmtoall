@@ -39,11 +39,11 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
 
   const getVoiceConfig = useCallback((): { rate: number; pitch: number } => {
     return ({
-      onyx:    { rate: 0.80, pitch: 0.72 },
-      nova:    { rate: 0.90, pitch: 1.08 },
-      echo:    { rate: 0.76, pitch: 0.65 },
-      shimmer: { rate: 0.94, pitch: 1.15 },
-    } as Record<string, { rate: number; pitch: number }>)[character.voice] ?? { rate: 0.87, pitch: 1.0 }
+      onyx:    { rate: 0.80, pitch: 0.68 },
+      nova:    { rate: 0.92, pitch: 1.15 },
+      echo:    { rate: 0.74, pitch: 0.60 },
+      shimmer: { rate: 0.95, pitch: 1.25 },
+    } as Record<string, { rate: number; pitch: number }>)[character.voice] ?? { rate: 0.82, pitch: 0.75 }
   }, [character.voice])
 
   const speakText = useCallback((
@@ -56,11 +56,21 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
       return
     }
     window.speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
+    // Strip action cues / stage directions in asterisks so TTS reads spoken words naturally
+    const spokenContent = text.replace(/\*[^*]+\*/g, '').trim() || text
+    const utt = new SpeechSynthesisUtterance(spokenContent)
     const cfg = getVoiceConfig()
     utt.rate = cfg.rate
     utt.pitch = cfg.pitch
     utt.volume = 1
+
+    // Try selecting a specific character voice if available in browser
+    const voices = window.speechSynthesis.getVoices()
+    if (voices.length > 0) {
+      // Find a deeper or distinct voice for character
+      const characterVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('David') || v.name.includes('Male')))
+      if (characterVoice) utt.voice = characterVoice
+    }
 
     const engine = getAudioEngine()
     if (engine.isPlaying()) engine.setVolume(0.22, 350)
@@ -79,10 +89,19 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
   const speakUserReply = useCallback((text: string, onEnd?: () => void) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) { onEnd?.(); return }
     window.speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.rate = 1.0
-    utt.pitch = 1.0
+    const cleanText = text.replace(/\*[^*]+\*/g, '').trim() || text
+    const utt = new SpeechSynthesisUtterance(cleanText)
+    // Distinct user voice parameters: brighter pitch, faster/snappier rate
+    utt.rate = 1.05
+    utt.pitch = 1.25
     utt.volume = 1
+
+    const voices = window.speechSynthesis.getVoices()
+    if (voices.length > 0) {
+      const userVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Zira') || v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('US English')))
+      if (userVoice) utt.voice = userVoice
+    }
+
     utt.onend = () => onEnd?.()
     utt.onerror = () => onEnd?.()
     window.speechSynthesis.speak(utt)
@@ -105,6 +124,7 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             characterId: character.id,
+            customCharacter: character,
             message: '(The user just arrived. Open with a single in-character line — one sentence, intriguing, specific to your story. Do NOT say Hello.)',
             history: [],
           }),
@@ -149,6 +169,7 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           characterId: character.id,
+          customCharacter: character,
           message: msg,
           history: updatedHistory.slice(-10),
         }),
@@ -191,7 +212,7 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
       const res = await fetch('/api/branch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ characterId: character.id, premise, history: messages }),
+        body: JSON.stringify({ characterId: character.id, customCharacter: character, premise, history: messages }),
       })
       const data = await res.json()
       setBranchTree(data)
@@ -310,7 +331,18 @@ export default function ChatInterface({ character }: ChatInterfaceProps) {
                   onClick={(e) => { e.stopPropagation(); startMusic(); speakText(msg.content, i) }}
                   title="Click to hear again"
                 >
-                  <p className="font-body text-sm text-paper leading-relaxed">{msg.content}</p>
+                  <p className="font-body text-sm text-paper leading-relaxed">
+                    {msg.content.split(/(\*[^*]+\*)/g).map((part, pIdx) => {
+                      if (part.startsWith('*') && part.endsWith('*')) {
+                        return (
+                          <span key={pIdx} className="italic text-paper-muted opacity-80 font-serif mr-1">
+                            {part}
+                          </span>
+                        )
+                      }
+                      return part
+                    })}
+                  </p>
                   <p className="font-mono text-[8px] text-paper-muted opacity-0 group-hover:opacity-30 mt-1 transition-opacity flex items-center gap-1">
                     <Volume2 className="w-2.5 h-2.5" strokeWidth={1.5} />
                     <span>tap to replay</span>

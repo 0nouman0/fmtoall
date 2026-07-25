@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { characterId: cid, premise, history = [] } = body
+    const { characterId: cid, premise, history = [], customCharacter } = body
     characterId = cid ?? ''
 
     if (!characterId || !premise) {
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    character = getCharacterById(characterId)
+    character = customCharacter || getCharacterById(characterId)
     if (!character) {
       return NextResponse.json(
         { error: 'Character not found' },

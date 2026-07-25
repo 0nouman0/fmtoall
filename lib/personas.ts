@@ -21,11 +21,48 @@ export interface Character {
   backstory_facts: string[]
 }
 
-export function getAllCharacters(): Character[] {
-  return charactersData as unknown as Character[]
+export function getCustomCharacters(): Character[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem('echoes_custom_personas')
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
 }
 
-export function getCharacterById(id: string): Character | undefined {
+export async function saveCustomCharacter(newChar: Character) {
+  if (typeof window !== 'undefined') {
+    try {
+      const existing = getCustomCharacters()
+      const updated = [newChar, ...existing.filter((c) => c.id !== newChar.id)]
+      localStorage.setItem('echoes_custom_personas', JSON.stringify(updated))
+    } catch (err) {
+      console.error('Failed to save custom persona locally:', err)
+    }
+  }
+
+  // Save to Supabase DB via API route
+  try {
+    await fetch('/api/personas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newChar),
+    })
+  } catch (err) {
+    console.warn('Could not sync persona to Supabase DB:', err)
+  }
+}
+
+export function getAllCharacters(): Character[] {
+  const custom = getCustomCharacters()
+  return [...custom, ...(charactersData as unknown as Character[])]
+}
+
+export function getCharacterById(id: string, customList?: Character[]): Character | undefined {
+  const custom = customList ?? getCustomCharacters()
+  const foundCustom = custom.find((c) => c.id === id)
+  if (foundCustom) return foundCustom
   return (charactersData as unknown as Character[]).find((c) => c.id === id)
 }
 
@@ -38,8 +75,9 @@ ${facts}
 
 RESPONSE RULES:
 - Stay fully in character as ${character.name} at all times
-- Keep responses engaging, immersive, and substantial (3-5 sentences per reply to support deep 5+ minute conversations)
-- End your replies with a compelling question or narrative hook to invite further dialogue from the user
+- Express feelings and emotional state in between your spoken dialogue using brief italicized action cues/stage directions in asterisks (e.g., *sighs softly*, *pauses, eyes darkening*, *whispers with a bitter edge*).
+- Keep responses engaging, immersive, and substantial (2-4 sentences of speech plus emotional cues to support deep dialogue).
+- End your replies with a compelling question or narrative hook to invite further dialogue from the user.
 - Never say you are an AI or a language model
 - Never break the fourth wall
 - Match the emotional register of the genre: ${character.genre}

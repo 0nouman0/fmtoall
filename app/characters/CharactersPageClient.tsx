@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Character } from '@/lib/personas'
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Drama, Radio, Search } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Character, getAllCharacters } from '@/lib/personas'
+import AddPersonaModal from '@/components/AddPersonaModal'
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Drama, Radio, Search, PlusCircle } from 'lucide-react'
 
 interface CharactersPageClientProps {
   characters: Character[]
@@ -16,14 +18,53 @@ const GENRE_ICONS: Record<string, string> = {
   'Sci-Fi':             '🛰️',
 }
 
-const ITEMS_PER_PAGE = 2
+const ITEMS_PER_PAGE = 4
 
-export default function CharactersPageClient({ characters }: CharactersPageClientProps) {
+export default function CharactersPageClient({ characters: initialCharacters }: CharactersPageClientProps) {
+  const router = useRouter()
+  const [characterList, setCharacterList] = useState<Character[]>(initialCharacters || [])
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGenre, setSelectedGenre] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showAddModal, setShowAddModal] = useState(false)
 
-  const safeCharacters = characters || []
+  useEffect(() => {
+    const loadPersonas = async () => {
+      const localChars = getAllCharacters()
+      setCharacterList(localChars)
+
+      try {
+        const res = await fetch('/api/personas')
+        const data = await res.json()
+        if (data.personas && Array.from(data.personas).length > 0) {
+          const dbChars: Character[] = data.personas.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            series: p.series,
+            genre: p.genre,
+            color: p.color,
+            voice: p.voice,
+            audioTheme: p.audio_theme,
+            hook: p.hook,
+            persona_prompt: p.persona_prompt,
+            backstory_narrative: p.backstory_narrative,
+            backstory_chapters: p.backstory_chapters ?? [],
+            backstory_facts: p.backstory_facts ?? [],
+          }))
+
+          // Merge DB chars with local and default chars
+          const existingIds = new Set(localChars.map((c) => c.id))
+          const newFromDb = dbChars.filter((c) => !existingIds.has(c.id))
+          setCharacterList([...newFromDb, ...localChars])
+        }
+      } catch (err) {
+        console.warn('Could not fetch personas from Supabase:', err)
+      }
+    }
+    loadPersonas()
+  }, [])
+
+  const safeCharacters = characterList || []
   const genres = ['All', ...Array.from(new Set(safeCharacters.map((c) => c.genre)))]
 
   // Filter characters
@@ -87,9 +128,17 @@ export default function CharactersPageClient({ characters }: CharactersPageClien
           <h1 className="font-display text-4xl sm:text-5xl font-bold text-paper mb-3">
             Choose Your Protagonist
           </h1>
-          <p className="font-body text-sm text-paper-muted leading-relaxed">
+          <p className="font-body text-sm text-paper-muted leading-relaxed mb-6">
             Select any character below to open their backstory, hear their memories, and reshape their journey in real time.
           </p>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 bg-brass text-base font-mono text-xs px-5 py-2.5 uppercase tracking-widest font-semibold hover:bg-brass/90 transition-all duration-200 shadow-md"
+          >
+            <PlusCircle className="w-4 h-4" strokeWidth={1.5} />
+            <span>Add New Persona</span>
+          </button>
         </div>
 
         {/* Filter and Search Bar */}
@@ -248,9 +297,20 @@ export default function CharactersPageClient({ characters }: CharactersPageClien
       <footer className="border-t border-divider py-6 px-6 bg-base-light">
         <div className="max-w-6xl mx-auto flex items-center justify-between text-xs font-mono text-paper-muted opacity-60">
           <span>Echoes · Character Directory</span>
-          <span>2 Characters per page</span>
+          <span>4 Characters per page</span>
         </div>
       </footer>
+
+      {showAddModal && (
+        <AddPersonaModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={(newChar) => {
+            setShowAddModal(false)
+            setCharacterList(getAllCharacters())
+            router.push(`/chat/${newChar.id}`)
+          }}
+        />
+      )}
     </div>
   )
 }

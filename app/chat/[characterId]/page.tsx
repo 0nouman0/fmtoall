@@ -22,7 +22,8 @@ export default async function ChatPage({ params }: PageProps) {
   const character = getCharacterById(characterId)
 
   if (!character) {
-    notFound()
+    // Return ChatPageClient with placeholder to client-side hydrate custom character if stored in localStorage
+    return <ChatPageClient character={{ id: characterId } as any} />
   }
 
   return <ChatPageClient character={character} />

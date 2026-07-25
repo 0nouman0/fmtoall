@@ -57,13 +57,13 @@ Rules:
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { characterId, message, history = [] } = body
+    const { characterId, message, history = [], customCharacter } = body
 
     if (!characterId || !message) {
       return NextResponse.json({ error: 'Missing characterId or message' }, { status: 400 })
     }
 
-    const character = getCharacterById(characterId)
+    const character: Character | undefined = customCharacter || getCharacterById(characterId)
     if (!character) {
       return NextResponse.json({ error: 'Character not found' }, { status: 404 })
     }
