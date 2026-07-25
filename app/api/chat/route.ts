@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getGroqClient, GROQ_MODEL } from '@/lib/groq'
-import { getCharacterById, buildChatSystemPrompt } from '@/lib/personas'
+import { getCharacterById, buildChatSystemPrompt, Character } from '@/lib/personas'
 
 function isQuestion(text: string): boolean {
   const t = text.trim()
